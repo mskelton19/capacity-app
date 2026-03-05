@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useTimeline } from "./context/TimelineContext";
 import TrackEditModal from "./components/TrackEditModal";
+import { useTrackDrag } from "./hooks/useTrackDrag";
+import { buildRowsWithOverrides } from "./utils/timelineRows";
 
 const TEAM_SIZE = 4;
 const NAME_COL = 80;
+const TEAM_ID = "yardai";
 
 const PEOPLE = [
   { name: "Sergio", role: "PM" },
@@ -48,19 +51,18 @@ export default function YardAITeam() {
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
   const TRACKS = tracks.yardai ?? [];
   const [editingTrack, setEditingTrack] = useState(null);
+  const timelineStripRef = useRef(null);
+  const rowRefs = useRef([]);
+  const rows = buildRowsWithOverrides(TRACKS);
+  const { draggingTrackId, handleBarPointerDown } = useTrackDrag(
+    timelineStripRef,
+    MONTHS.length,
+    updateTrack,
+    (track, didDrag) => { if (!didDrag) setEditingTrack(track); },
+    rowRefs
+  );
   const committedByMonth = MONTH_COMMITTED(MONTHS.length);
   const unknownByMonth = MONTH_UNKNOWN(MONTHS.length);
-
-  const rows = [];
-  TRACKS.forEach(track => {
-    let placed = false;
-    for (const row of rows) {
-      if (row.every(r => r.end <= track.start + 0.05 || r.start >= track.end - 0.05)) {
-        row.push(track); placed = true; break;
-      }
-    }
-    if (!placed) rows.push([track]);
-  });
 
   return (
     <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", background: "#f8fafc", minHeight: "100vh", padding: "28px 32px", color: "#0f172a", maxWidth: 1200, margin: "0 auto" }}>
@@ -116,9 +118,9 @@ export default function YardAITeam() {
         {/* Gantt */}
         <div style={{ padding: "16px 0 14px", borderBottom: "2px solid #e2e8f0" }}>
           {rows.map((row, ri) => (
-            <div key={ri} style={{ display: "flex", marginBottom: ri < rows.length - 1 ? 22 : 8 }}>
+            <div key={ri} ref={(el) => { rowRefs.current[ri] = el; }} style={{ display: "flex", marginBottom: ri < rows.length - 1 ? 22 : 8 }}>
               <div style={{ width: NAME_COL, flexShrink: 0 }} />
-              <div style={{ flex: 1, position: "relative", height: 36 }}>
+              <div ref={ri === 0 ? timelineStripRef : null} style={{ flex: 1, position: "relative", height: 36 }}>
                 {MONTHS.map((_, i) => i > 0 && (
                   <div key={i} style={{ position: "absolute", left: `${(i / MONTHS.length) * 100}%`, top: 0, bottom: 0, borderLeft: "1px dashed #e2e8f0", pointerEvents: "none" }} />
                 ))}
@@ -129,12 +131,14 @@ export default function YardAITeam() {
                   const displayLabel = track.atRisk ? `${track.label} (?)` : track.label;
                   const labelPx = displayLabel.length * 6.5 + 20;
                   const labelFits = barPx > labelPx;
+                  const isDragging = draggingTrackId === track.id;
                   return (
                     <div key={track.id ?? track.label} style={{ position: "absolute", left: `${left}%`, width: `${width}%`, height: 36 }}>
                       <div
-                        onClick={() => setEditingTrack(track)}
-                        style={{ height: "100%", background: track.atRisk ? "transparent" : track.color, border: track.atRisk ? `2px dashed ${track.color}` : "none", borderRadius: "4px 14px 14px 4px", display: "flex", alignItems: "center", paddingLeft: 12, paddingRight: 20, fontSize: 12, fontWeight: 700, color: track.atRisk ? track.color : "white", whiteSpace: "nowrap", overflow: "hidden", clipPath: track.atRisk ? "none" : "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)", boxShadow: track.atRisk ? "none" : "0 1px 3px rgba(0,0,0,0.12)", cursor: "pointer" }}
-                        title="Click to edit"
+                        onMouseDown={(e) => { e.preventDefault(); handleBarPointerDown(track, TEAM_ID, e); }}
+                        onTouchStart={(e) => handleBarPointerDown(track, TEAM_ID, e)}
+                        style={{ height: "100%", background: track.atRisk ? "transparent" : track.color, border: track.atRisk ? `2px dashed ${track.color}` : "none", borderRadius: "4px 14px 14px 4px", display: "flex", alignItems: "center", paddingLeft: 12, paddingRight: 20, fontSize: 12, fontWeight: 700, color: track.atRisk ? track.color : "white", whiteSpace: "nowrap", overflow: "hidden", clipPath: track.atRisk ? "none" : "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)", boxShadow: track.atRisk ? "none" : "0 1px 3px rgba(0,0,0,0.12)", cursor: isDragging ? "grabbing" : "grab", userSelect: "none", opacity: isDragging ? 0.9 : 1 }}
+                        title="Drag to move, click to edit"
                       >
                         {labelFits ? displayLabel : ""}
                       </div>
