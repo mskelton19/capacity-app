@@ -1,4 +1,6 @@
-import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { fetchAppState, saveAppState } from "../api/appState";
+import { useAuth } from "./AuthContext";
 
 const STORAGE_KEY = "capacity-app-timelines";
 
@@ -194,9 +196,43 @@ export function TimelineProvider({ children }) {
     return raw.length ? raw : DEFAULT_QUESTIONS;
   });
 
+  const { isEditor } = useAuth();
+  const hasHydratedFromRemote = useRef(false);
+  const saveTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchAppState().then((remote) => {
+      if (cancelled || !remote || hasHydratedFromRemote.current) return;
+      hasHydratedFromRemote.current = true;
+      if (remote.range) setRangeState(remote.range);
+      if (remote.tracks) setTracksState(remote.tracks);
+      if (remote.commitments) {
+        const monthCount = remote.range?.months?.length ?? 6;
+        setCommitmentsState({
+          ppcx: ensureCommitmentsLength(remote.commitments.ppcx, monthCount) ?? DEFAULT_COMMITMENTS.ppcx,
+          mobile: ensureCommitmentsLength(remote.commitments.mobile, monthCount) ?? DEFAULT_COMMITMENTS.mobile,
+          yardai: ensureCommitmentsLength(remote.commitments.yardai, monthCount) ?? DEFAULT_COMMITMENTS.yardai,
+        });
+      }
+      if (Array.isArray(remote.questions) && remote.questions.length > 0) setQuestionsState(remote.questions);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   useEffect(() => {
     saveStored({ range, tracks, commitments, questions });
-  }, [range, tracks, commitments, questions]);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    if (isEditor) {
+      saveTimeoutRef.current = setTimeout(() => {
+        saveTimeoutRef.current = null;
+        saveAppState({ range, tracks, commitments, questions });
+      }, 1500);
+    }
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
+  }, [range, tracks, commitments, questions, isEditor]);
 
   const updateRange = useCallback((months, year) => {
     setRangeState((prev) => ({

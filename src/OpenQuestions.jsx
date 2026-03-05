@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useTimeline } from "./context/TimelineContext";
+import { useAuth } from "./context/AuthContext";
 import QuestionEditModal from "./components/QuestionEditModal";
 import { getQuestionStatusStyle } from "./utils/questionStatus";
 
@@ -36,6 +37,7 @@ function getTeamDisplayLabel(teams) {
 }
 
 export default function OpenQuestions() {
+  const { isEditor } = useAuth();
   const { questions, addQuestion, updateQuestion } = useTimeline();
   const [activeCategory, setActiveCategory] = useState("all");
   const [expanded, setExpanded] = useState(null);
@@ -69,7 +71,7 @@ export default function OpenQuestions() {
             <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>Open Questions</h1>
             <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{(questions || []).length} items across all teams — click to expand, use category to find where you can help</p>
           </div>
-          <button type="button" onClick={() => setEditingQuestion({})} style={{ padding: "8px 16px", fontSize: 12, fontWeight: 700, color: "#6366f1", background: "white", border: "1.5px solid #6366f1", borderRadius: 8, cursor: "pointer" }}>+ Add question</button>
+          {isEditor && <button type="button" onClick={() => setEditingQuestion({})} style={{ padding: "8px 16px", fontSize: 12, fontWeight: 700, color: "#6366f1", background: "white", border: "1.5px solid #6366f1", borderRadius: 8, cursor: "pointer" }}>+ Add question</button>}
         </div>
       </div>
 
@@ -125,7 +127,7 @@ export default function OpenQuestions() {
                         <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", flexShrink: 0 }}>{getTeamDisplayLabel(q.teams)}</div>
                         <div style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", flexShrink: 0, textTransform: "capitalize" }}>{q.category}</div>
                         <span style={{ background: statusStyle.bg, color: statusStyle.text, fontSize: 10, fontWeight: 800, padding: "2px 8px", borderRadius: 20, border: `1px solid ${statusStyle.border}`, flexShrink: 0 }}>{q.status}</span>
-                        <button type="button" onClick={(e) => { e.stopPropagation(); setEditingQuestion(q); }} style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>Edit</button>
+                        {isEditor && <button type="button" onClick={(e) => { e.stopPropagation(); setEditingQuestion(q); }} style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "none", border: "none", cursor: "pointer", flexShrink: 0 }}>Edit</button>}
                         <div style={{ color: "#cbd5e1", fontSize: 11, transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s", flexShrink: 0 }}>▼</div>
                       </div>
                       {isExpanded && (

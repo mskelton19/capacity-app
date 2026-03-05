@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useTimeline } from "./context/TimelineContext";
+import { useAuth } from "./context/AuthContext";
 import TrackEditModal from "./components/TrackEditModal";
 import { useTrackDrag } from "./hooks/useTrackDrag";
 import { buildRowsWithOverrides } from "./utils/timelineRows";
@@ -59,6 +60,7 @@ function getColor(pct) {
 const NAME_COL = 80;
 
 export default function PPCXTeam() {
+  const { isEditor } = useAuth();
   const { range, tracks, commitments, questions, updateTrack, updateCommitment, addQuestion, updateQuestion } = useTimeline();
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
   const monthCount = MONTHS.length;
@@ -75,7 +77,7 @@ export default function PPCXTeam() {
     timelineStripRef,
     monthCount,
     updateTrack,
-    (track, didDrag) => { if (!didDrag) setEditingTrack(track); },
+    (track, didDrag) => { if (isEditor && !didDrag) setEditingTrack(track); },
     rowRefs
   );
 
@@ -146,10 +148,10 @@ export default function PPCXTeam() {
                   return (
                     <div key={track.id ?? track.label} style={{ position: "absolute", left: `${left}%`, width: `${width}%`, height: 36 }}>
                       <div
-                        onMouseDown={(e) => { e.preventDefault(); handleBarPointerDown(track, TEAM_ID, e); }}
-                        onTouchStart={(e) => handleBarPointerDown(track, TEAM_ID, e)}
-                        style={{ height: "100%", background: track.atRisk ? "transparent" : track.color, border: track.atRisk ? `2px dashed ${track.color}` : "none", borderRadius: "4px 14px 14px 4px", display: "flex", alignItems: "center", paddingLeft: 12, paddingRight: 20, fontSize: 12, fontWeight: 700, color: track.atRisk ? track.color : "white", whiteSpace: "nowrap", overflow: "hidden", clipPath: track.atRisk ? "none" : "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)", boxShadow: track.atRisk ? "none" : "0 1px 3px rgba(0,0,0,0.12)", cursor: isDragging ? "grabbing" : "grab", userSelect: "none", opacity: isDragging ? 0.9 : 1 }}
-                        title="Drag to move, click to edit"
+                        onMouseDown={(e) => { if (isEditor) { e.preventDefault(); handleBarPointerDown(track, TEAM_ID, e); } }}
+                        onTouchStart={(e) => { if (isEditor) handleBarPointerDown(track, TEAM_ID, e); }}
+                        style={{ height: "100%", background: track.atRisk ? "transparent" : track.color, border: track.atRisk ? `2px dashed ${track.color}` : "none", borderRadius: "4px 14px 14px 4px", display: "flex", alignItems: "center", paddingLeft: 12, paddingRight: 20, fontSize: 12, fontWeight: 700, color: track.atRisk ? track.color : "white", whiteSpace: "nowrap", overflow: "hidden", clipPath: track.atRisk ? "none" : "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)", boxShadow: track.atRisk ? "none" : "0 1px 3px rgba(0,0,0,0.12)", cursor: isEditor ? (isDragging ? "grabbing" : "grab") : "default", userSelect: "none", opacity: isDragging ? 0.9 : 1 }}
+                        title={isEditor ? "Drag to move, click to edit" : undefined}
                       >
                         {labelFits ? track.label : ""}
                       </div>
@@ -186,9 +188,10 @@ export default function PPCXTeam() {
                     <button
                       key={mi}
                       type="button"
-                      onClick={() => updateCommitment("ppcx", person.name, mi, nextCommitmentValue(state))}
-                      style={{ flex: 1, height: 28, borderRadius: 6, background: state === true ? "#1e293b" : state === null ? `repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 3px, #f8fafc 3px, #f8fafc 6px)` : "#f1f5f9", border: state === null ? "1.5px dashed #cbd5e1" : "1.5px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: state === true ? "white" : "#94a3b8", cursor: "pointer" }}
-                      title="Click to cycle: available → committed → unknown"
+                      disabled={!isEditor}
+                      onClick={() => isEditor && updateCommitment("ppcx", person.name, mi, nextCommitmentValue(state))}
+                      style={{ flex: 1, height: 28, borderRadius: 6, background: state === true ? "#1e293b" : state === null ? `repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 3px, #f8fafc 3px, #f8fafc 6px)` : "#f1f5f9", border: state === null ? "1.5px dashed #cbd5e1" : "1.5px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: state === true ? "white" : "#94a3b8", cursor: isEditor ? "pointer" : "default" }}
+                      title={isEditor ? "Click to cycle: available → committed → unknown" : undefined}
                     >
                       {state === true ? "●" : state === null ? "?" : ""}
                     </button>
@@ -246,7 +249,7 @@ export default function PPCXTeam() {
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: "#94a3b8", textTransform: "uppercase" }}>Open Questions & Risks</div>
-          <button type="button" onClick={() => setEditingQuestion({})} style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "none", border: "none", cursor: "pointer" }}>+ Add question</button>
+          {isEditor && <button type="button" onClick={() => setEditingQuestion({})} style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "none", border: "none", cursor: "pointer" }}>+ Add question</button>}
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {teamQuestions.map((q) => {
@@ -259,7 +262,7 @@ export default function PPCXTeam() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   <span style={{ background: s.bg, color: s.text, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20, border: `1px solid ${s.border}` }}>{q.status}</span>
-                  <button type="button" onClick={() => setEditingQuestion(q)} style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "none", border: "none", cursor: "pointer" }}>Edit</button>
+                  {isEditor && <button type="button" onClick={() => setEditingQuestion(q)} style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "none", border: "none", cursor: "pointer" }}>Edit</button>}
                 </div>
               </div>
             );
