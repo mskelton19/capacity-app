@@ -1,8 +1,10 @@
 import { useState, useRef } from "react";
 import { useTimeline } from "./context/TimelineContext";
 import TrackEditModal from "./components/TrackEditModal";
+import QuestionEditModal from "./components/QuestionEditModal";
 import { useTrackDrag } from "./hooks/useTrackDrag";
 import { buildRowsWithOverrides } from "./utils/timelineRows";
+import { getQuestionStatusStyle } from "./utils/questionStatus";
 
 const TEAM_SIZE = 4;
 const NAME_COL = 80;
@@ -53,14 +55,16 @@ function getColor(pct) {
 }
 
 export default function YardAITeam() {
-  const { range, tracks, commitments, updateTrack, updateCommitment } = useTimeline();
+  const { range, tracks, commitments, questions, updateTrack, updateCommitment, addQuestion, updateQuestion } = useTimeline();
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
   const monthCount = MONTHS.length;
   const TRACKS = tracks.yardai ?? [];
   const teamCommitments = commitments.yardai ?? {};
   const { committed: committedByMonth, unknown: unknownByMonth } = computeCommittedUnknown(teamCommitments, PEOPLE, monthCount);
   const [editingTrack, setEditingTrack] = useState(null);
+  const [editingQuestion, setEditingQuestion] = useState(null);
   const timelineStripRef = useRef(null);
+  const teamQuestions = (questions || []).filter((q) => (q.teams || []).includes("yardai"));
   const rowRefs = useRef([]);
   const rows = buildRowsWithOverrides(TRACKS);
   const { draggingTrackId, handleBarPointerDown } = useTrackDrag(
@@ -228,12 +232,45 @@ export default function YardAITeam() {
         </div>
       </div>
 
+      {/* Open Questions */}
+      <div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: "#94a3b8", textTransform: "uppercase" }}>Open Questions & Risks</div>
+          <button type="button" onClick={() => setEditingQuestion({})} style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "none", border: "none", cursor: "pointer" }}>+ Add question</button>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {teamQuestions.map((q) => {
+            const s = getQuestionStatusStyle(q.status);
+            return (
+              <div key={q.id} style={{ background: "white", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "13px 18px", display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", marginBottom: 3 }}>{q.question}</div>
+                  <div style={{ fontSize: 12, color: "#475569", lineHeight: 1.6 }}>{q.detail}</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <span style={{ background: s.bg, color: s.text, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20, border: `1px solid ${s.border}` }}>{q.status}</span>
+                  <button type="button" onClick={() => setEditingQuestion(q)} style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "none", border: "none", cursor: "pointer" }}>Edit</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {editingTrack && (
         <TrackEditModal
           track={editingTrack}
           monthCount={MONTHS.length}
           onSave={(updates) => updateTrack("yardai", editingTrack.id, updates)}
           onClose={() => setEditingTrack(null)}
+        />
+      )}
+
+      {editingQuestion && (
+        <QuestionEditModal
+          question={editingQuestion.id ? editingQuestion : null}
+          onSave={(payload) => (editingQuestion.id ? updateQuestion(editingQuestion.id, payload) : addQuestion({ ...payload, teams: payload.teams || ["yardai"] }))}
+          onClose={() => setEditingQuestion(null)}
         />
       )}
     </div>

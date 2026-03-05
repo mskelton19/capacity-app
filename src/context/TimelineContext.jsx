@@ -59,6 +59,84 @@ const DEFAULT_COMMITMENTS = {
   },
 };
 
+export const QUESTION_STATUSES = ["Needs discussion", "Being Discussed", "Done"];
+export const QUESTION_CATEGORIES = ["strategic", "technical", "resourcing"];
+
+const DEFAULT_QUESTIONS = [
+  {
+    id: "q-josh-split",
+    question: "After that, does Josh stay with Mobile App permanently or shift back to PPCX?",
+    detail: "Josh recently moved over to help the Mobile App team. He'll be with Mobile App 75% of the time in March and April (where he can fill in for Matt). After that, does he stay with Mobile App permanently or shift back to the PPCX team? This question will have capacity impacts on each team.",
+    teams: ["ppcx", "mobile"],
+    status: "Needs discussion",
+    category: "resourcing",
+  },
+  {
+    id: "q-sunny-recap",
+    question: "Sunny Guided Season Recap — staffing & ownership",
+    detail: "Cory and Bryan D are expected to work on this from a BE perspective, but the Yard AI side of this is unknown. We will need to do more discovery to determine the work and then decide if resources from Yard AI need to be allocated here.",
+    teams: ["ppcx", "yardai"],
+    status: "Needs discussion",
+    category: "strategic",
+  },
+  {
+    id: "q-yard-status-reminders",
+    question: "Yard Status iteration & reminders — how do we staff the next phase?",
+    detail: "Our assumption is that we will need to do additional work once we learn more about the experience. There are probably other things like reminders/nudges that should happen regardless of what we find in the data. How are we planning on staffing that work?",
+    teams: ["ppcx"],
+    status: "Needs discussion",
+    category: "technical",
+  },
+  {
+    id: "q-tech-debt",
+    question: "Tech debt prioritization — what gets worked and in what order?",
+    detail: "Brian W is the primary owner of tech debt for potentially 6 months. Having an entire BE engineer dedicated to this is significant. What gets prioritized and why needs a decision so this time is used intentionally.",
+    teams: ["ppcx"],
+    status: "Needs discussion",
+    category: "technical",
+  },
+  {
+    id: "q-be-sunny-recap",
+    question: "What BE work is needed before Sunny Guided Season Recap can start?",
+    detail: "Justin is expected to shift to Sunny Guided Season Recap but the BE prerequisites aren't defined. Needs scoping before capacity can be confirmed.",
+    teams: ["ppcx"],
+    status: "Needs discussion",
+    category: "technical",
+  },
+  {
+    id: "q-ppcx-engineers-recap",
+    question: "How many PPCX engineers are needed for Sunny Guided Season Recap, and when?",
+    detail: "Justin, Cory, and Bryan D are all question marks in June/July pending this answer. The number of engineers pulled onto this work directly affects how much capacity PPCX has for anything else in Q3.",
+    teams: ["ppcx"],
+    status: "Needs discussion",
+    category: "resourcing",
+  },
+  {
+    id: "q-josh-tweaks",
+    question: "What do we want to focus on when Josh has bandwidth for tweaks?",
+    detail: "We will have Josh 75% of the time. His ultimate goal will be to monitor for bugs and make sure the app is running as anticipated. If all goes well, we may have some time for basic tweaks. What do we want to focus on at that point?",
+    teams: ["mobile"],
+    status: "Needs discussion",
+    category: "technical",
+  },
+  {
+    id: "q-app-strategy",
+    question: "App strategy and sequencing — Yard Status, Acquisition, Sub Management",
+    detail: "The executive team has said at different points that Yard Status, Acquisition, and Sub Management all need to be added to the app. There's a larger strategic question about what we want/need the app to be. We could use the executive's help in cascading the overall strategy and providing guidance on sequencing.",
+    teams: ["mobile"],
+    status: "Needs discussion",
+    category: "strategic",
+  },
+  {
+    id: "q-sergio-may",
+    question: "What is Sergio focused on during May?",
+    detail: "We could either take a big swing (something like Sunny Memories) or use that opportunity to clean up some of our UI.",
+    teams: ["yardai"],
+    status: "Needs discussion",
+    category: "strategic",
+  },
+];
+
 function loadStored() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -109,10 +187,16 @@ export function TimelineProvider({ children }) {
       yardai: ensureCommitmentsLength(raw.yardai ?? DEFAULT_COMMITMENTS.yardai, monthCount),
     };
   });
+  const [questions, setQuestionsState] = useState(() => {
+    const stored = loadStored();
+    const raw = stored?.questions;
+    if (!Array.isArray(raw)) return DEFAULT_QUESTIONS;
+    return raw.length ? raw : DEFAULT_QUESTIONS;
+  });
 
   useEffect(() => {
-    saveStored({ range, tracks, commitments });
-  }, [range, tracks, commitments]);
+    saveStored({ range, tracks, commitments, questions });
+  }, [range, tracks, commitments, questions]);
 
   const updateRange = useCallback((months, year) => {
     setRangeState((prev) => ({
@@ -164,14 +248,34 @@ export function TimelineProvider({ children }) {
     });
   }, []);
 
+  const addQuestion = useCallback((q) => {
+    const id = `q-${Date.now()}`;
+    setQuestionsState((prev) => [...prev, { ...q, id, status: q.status || "Needs discussion", category: q.category || "strategic" }]);
+    return id;
+  }, []);
+
+  const updateQuestion = useCallback((id, updates) => {
+    setQuestionsState((prev) =>
+      prev.map((q) => (q.id === id ? { ...q, ...updates } : q))
+    );
+  }, []);
+
+  const removeQuestion = useCallback((id) => {
+    setQuestionsState((prev) => prev.filter((q) => q.id !== id));
+  }, []);
+
   const value = {
     range,
     tracks,
     commitments,
+    questions,
     updateRange,
     updateTracks,
     updateTrack,
     updateCommitment,
+    addQuestion,
+    updateQuestion,
+    removeQuestion,
     addTrack,
     removeTrack,
     monthCount: range.months?.length ?? 6,

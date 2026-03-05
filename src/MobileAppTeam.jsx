@@ -44,15 +44,8 @@ function computeMobileCapacity(commitments, people, monthCount) {
   return { committed, unknown, effective };
 }
 
-const OPEN_QUESTIONS = [
-  { id: "Q1", severity: "high", question: "Josh's split — when does he move to 100% Mobile App?", detail: "Currently 75% Mobile App / 25% PPCX in March. With Matt on leave, Josh likely needs to be 100% Mobile App from April. This is a shared decision with the PPCX team." },
-  { id: "Q2", severity: "high", question: "Onboarding Questions or Update Task Instructions — which do we prioritize?", detail: "Josh has capacity for one during the solo window. Both focused on learning how customers use the app and improving the onboarding flow. A decision is needed on which delivers the most insight." },
-  { id: "Q3", severity: "high", question: "Yard Status vs. Acquisition — what's the strategic priority?", detail: "Both in June+ but this is a 2-person team. Sequencing needed. This also surfaces a real tension: the app team's capacity doesn't match the company narrative about what the app could be. If the app is a strategic priority, resourcing needs to reflect that." },
-];
-
-function getSeverityStyle(s) {
-  return { bg: "white", border: "#e2e8f0", badge: "#94a3b8", badgeBg: "#f1f5f9", label: s === "high" ? "Needs decision" : "Monitor" };
-}
+import QuestionEditModal from "./components/QuestionEditModal";
+import { getQuestionStatusStyle } from "./utils/questionStatus";
 
 function getColor(pct) {
   if (pct === 0)    return { fill: "#e2e8f0", bg: "#f8fafc", border: "#e2e8f0", text: "#94a3b8", label: "Open" };
@@ -66,14 +59,16 @@ const NAME_COL = 80;
 const TEAM_ID = "mobile";
 
 export default function MobileAppTeam() {
-  const { range, tracks, commitments, updateTrack, updateCommitment } = useTimeline();
+  const { range, tracks, commitments, questions, updateTrack, updateCommitment, addQuestion, updateQuestion } = useTimeline();
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
   const monthCount = MONTHS.length;
   const TRACKS = tracks.mobile ?? [];
   const teamCommitments = commitments.mobile ?? {};
   const { committed: committedByMonth, unknown: unknownByMonth, effective: effectiveCapacity } = computeMobileCapacity(teamCommitments, PEOPLE, monthCount);
   const [editingTrack, setEditingTrack] = useState(null);
+  const [editingQuestion, setEditingQuestion] = useState(null);
   const timelineStripRef = useRef(null);
+  const teamQuestions = (questions || []).filter((q) => (q.teams || []).includes("mobile"));
   const rowRefs = useRef([]);
   const rows = buildRowsWithOverrides(TRACKS);
   const { draggingTrackId, handleBarPointerDown } = useTrackDrag(
@@ -172,7 +167,6 @@ export default function MobileAppTeam() {
           ))}
         </div>
 
-        {/* Team capacity */}
         <div style={{ padding: "20px 16px 20px 0" }}>
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase", marginBottom: 14, paddingLeft: NAME_COL }}>
             Team Capacity · Engineers with assigned work
@@ -260,23 +254,36 @@ export default function MobileAppTeam() {
 
       {/* Open Questions */}
       <div>
-        <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: "#94a3b8", textTransform: "uppercase", marginBottom: 12 }}>Open Questions & Risks</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: "#94a3b8", textTransform: "uppercase" }}>Open Questions & Risks</div>
+          <button type="button" onClick={() => setEditingQuestion({})} style={{ fontSize: 11, fontWeight: 700, color: "#6366f1", background: "none", border: "none", cursor: "pointer" }}>+ Add question</button>
+        </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {OPEN_QUESTIONS.map(q => {
-            const s = getSeverityStyle(q.severity);
+          {teamQuestions.map((q) => {
+            const s = getQuestionStatusStyle(q.status);
             return (
-              <div key={q.id} style={{ background: s.bg, border: `1.5px solid ${s.border}`, borderRadius: 12, padding: "13px 18px", display: "flex", gap: 14, alignItems: "flex-start" }}>
-                <div style={{ background: s.badgeBg, color: s.badge, fontWeight: 800, fontSize: 10, padding: "3px 8px", borderRadius: 6, flexShrink: 0, letterSpacing: 0.5, border: `1px solid ${s.badge}33`, marginTop: 1 }}>{q.id}</div>
+              <div key={q.id} style={{ background: "white", border: "1.5px solid #e2e8f0", borderRadius: 12, padding: "13px 18px", display: "flex", gap: 14, alignItems: "flex-start" }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#1e293b", marginBottom: 3 }}>{q.question}</div>
                   <div style={{ fontSize: 12, color: "#475569", lineHeight: 1.6 }}>{q.detail}</div>
                 </div>
-                <div style={{ flexShrink: 0, background: s.badgeBg, color: s.badge, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20, border: `1px solid ${s.badge}33`, marginTop: 1 }}>{s.label}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  <span style={{ background: s.bg, color: s.text, fontSize: 10, fontWeight: 800, padding: "3px 10px", borderRadius: 20, border: `1px solid ${s.border}` }}>{q.status}</span>
+                  <button type="button" onClick={() => setEditingQuestion(q)} style={{ fontSize: 11, fontWeight: 700, color: "#64748b", background: "none", border: "none", cursor: "pointer" }}>Edit</button>
+                </div>
               </div>
             );
           })}
         </div>
       </div>
+
+      {editingQuestion && (
+        <QuestionEditModal
+          question={editingQuestion.id ? editingQuestion : null}
+          onSave={(payload) => (editingQuestion.id ? updateQuestion(editingQuestion.id, payload) : addQuestion({ ...payload, teams: payload.teams || ["mobile"] }))}
+          onClose={() => setEditingQuestion(null)}
+        />
+      )}
     </div>
   );
 }

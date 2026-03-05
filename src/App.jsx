@@ -10,13 +10,14 @@ const TABS = [
   { id: "ppcx",      label: "PPCX",           sublabel: "5 engineers" },
   { id: "mobile",    label: "Mobile App",      sublabel: "2 engineers" },
   { id: "yardai",    label: "Yard AI",         sublabel: "4 people" },
-  { id: "questions", label: "Open Questions",  sublabel: "8 open items" },
+  { id: "questions", label: "Open Questions",  sublabelKey: "questions" },
 ];
 
 export default function App() {
   const [active, setActive] = useState("ppcx");
   const [editingRange, setEditingRange] = useState(false);
-  const { range, updateRange } = useTimeline();
+  const { range, questions, updateRange } = useTimeline();
+  const questionCount = (questions || []).length;
   const rangeLabel = range.months?.length
     ? `${range.months[0]} – ${range.months[range.months.length - 1]} ${range.year ?? 2026}`
     : "Mar – Aug 2026";
@@ -38,13 +39,14 @@ export default function App() {
         </div>
         {TABS.map(tab => {
           const isQuestions = tab.id === "questions";
+          const sublabel = tab.sublabelKey === "questions" ? `${questionCount} open items` : tab.sublabel;
           return (
             <button
               key={tab.id}
               onClick={() => setActive(tab.id)}
               style={{ background: "none", border: "none", cursor: "pointer", padding: "16px 4px", borderBottom: active === tab.id ? `3px solid ${isQuestions ? "#f59e0b" : "#6366f1"}` : "3px solid transparent", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2, transition: "border-color 0.15s" }}>
               <span style={{ fontSize: 13, fontWeight: 800, color: active === tab.id ? (isQuestions ? "#f59e0b" : "#6366f1") : "#334155" }}>{tab.label}</span>
-              <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>{tab.sublabel}</span>
+              <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>{sublabel}</span>
             </button>
           );
         })}
