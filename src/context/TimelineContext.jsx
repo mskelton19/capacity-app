@@ -39,6 +39,26 @@ const DEFAULT_TRACKS = {
   ],
 };
 
+const DEFAULT_COMMITMENTS = {
+  ppcx: {
+    "Josh":    [true,  false, false, false, false, false],
+    "Justin":  [true,  true,  true,  false, false, false],
+    "Bryan D": [true,  true,  true,  false, false, false],
+    "Brian W": [true,  true,  true,  true,  true,  true ],
+    "Cory":    [true,  true,  true,  false, false, false],
+  },
+  mobile: {
+    "Josh": [true, true,  true,  true, true, true],
+    "Matt": [true, "leave", "returning", true, true, true],
+  },
+  yardai: {
+    "Sergio": [true,  true,  false, false, false, false],
+    "James":  [false, true,  true,  false, false, false],
+    "Adam":   [false, true,  true,  false, false, false],
+    "Maggie": [false, true,  true,  false, false, false],
+  },
+};
+
 function loadStored() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -55,6 +75,18 @@ function saveStored(state) {
   } catch (_) {}
 }
 
+function ensureCommitmentsLength(commitments, monthCount) {
+  if (!commitments) return commitments;
+  const out = {};
+  for (const [person, arr] of Object.entries(commitments)) {
+    if (!Array.isArray(arr)) continue;
+    const len = arr.length;
+    if (len >= monthCount) out[person] = arr.slice(0, monthCount);
+    else out[person] = [...arr, ...Array(monthCount - len).fill(false)];
+  }
+  return out;
+}
+
 const TimelineContext = createContext(null);
 
 export function TimelineProvider({ children }) {
@@ -66,10 +98,21 @@ export function TimelineProvider({ children }) {
     const stored = loadStored();
     return stored?.tracks ?? DEFAULT_TRACKS;
   });
+  const [commitments, setCommitmentsState] = useState(() => {
+    const stored = loadStored();
+    const monthCount = stored?.range?.months?.length ?? 6;
+    const raw = stored?.commitments;
+    if (!raw || typeof raw !== "object") return DEFAULT_COMMITMENTS;
+    return {
+      ppcx: ensureCommitmentsLength(raw.ppcx ?? DEFAULT_COMMITMENTS.ppcx, monthCount),
+      mobile: ensureCommitmentsLength(raw.mobile ?? DEFAULT_COMMITMENTS.mobile, monthCount),
+      yardai: ensureCommitmentsLength(raw.yardai ?? DEFAULT_COMMITMENTS.yardai, monthCount),
+    };
+  });
 
   useEffect(() => {
-    saveStored({ range, tracks });
-  }, [range, tracks]);
+    saveStored({ range, tracks, commitments });
+  }, [range, tracks, commitments]);
 
   const updateRange = useCallback((months, year) => {
     setRangeState((prev) => ({
@@ -111,12 +154,24 @@ export function TimelineProvider({ children }) {
     }));
   }, []);
 
+  const updateCommitment = useCallback((teamId, personName, monthIndex, value) => {
+    setCommitmentsState((prev) => {
+      const team = prev[teamId] ?? {};
+      const arr = team[personName] ? [...team[personName]] : [];
+      while (arr.length <= monthIndex) arr.push(false);
+      arr[monthIndex] = value;
+      return { ...prev, [teamId]: { ...team, [personName]: arr } };
+    });
+  }, []);
+
   const value = {
     range,
     tracks,
+    commitments,
     updateRange,
     updateTracks,
     updateTrack,
+    updateCommitment,
     addTrack,
     removeTrack,
     monthCount: range.months?.length ?? 6,

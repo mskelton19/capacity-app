@@ -22,21 +22,27 @@ const PHASE_LABELS = [
   { start: 3.0, end: 6,   label: "Strategic TBD",      sublabel: "Save Tasks + Season Recap",                                      bg: "#f5f3ff", border: "#c4b5fd", text: "#7c3aed" },
 ];
 
-const COMMITMENTS = {
-  "Sergio": [true,  true,  false, false, false, false],
-  "James":  [false, true,  true,  false, false, false],
-  "Adam":   [false, true,  true,  false, false, false],
-  "Maggie": [false, true,  true,  false, false, false],
-};
+function nextCommitmentValue(current) {
+  const cycle = [false, true, null];
+  const i = cycle.indexOf(current);
+  return cycle[(i + 1) % 3];
+}
 
-const MONTH_COMMITTED = (monthCount) =>
-  Array.from({ length: monthCount }, (_, mi) =>
-    Object.values(COMMITMENTS).filter(c => c[mi] === true).length
-  );
-const MONTH_UNKNOWN = (monthCount) =>
-  Array.from({ length: monthCount }, (_, mi) =>
-    Object.values(COMMITMENTS).filter(c => c[mi] === null).length
-  );
+function computeCommittedUnknown(commitments, people, monthCount) {
+  const byMonth = { committed: [], unknown: [] };
+  for (let mi = 0; mi < monthCount; mi++) {
+    let committed = 0, unknown = 0;
+    people.forEach((p) => {
+      const arr = commitments[p.name];
+      const v = Array.isArray(arr) ? arr[mi] : undefined;
+      if (v === true) committed++;
+      else if (v === null) unknown++;
+    });
+    byMonth.committed.push(committed);
+    byMonth.unknown.push(unknown);
+  }
+  return byMonth;
+}
 
 function getColor(pct) {
   if (pct === 0)   return { fill: "#e2e8f0", bg: "#f8fafc", border: "#e2e8f0", text: "#94a3b8", label: "Open" };
@@ -47,22 +53,23 @@ function getColor(pct) {
 }
 
 export default function YardAITeam() {
-  const { range, tracks, updateTrack } = useTimeline();
+  const { range, tracks, commitments, updateTrack, updateCommitment } = useTimeline();
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
+  const monthCount = MONTHS.length;
   const TRACKS = tracks.yardai ?? [];
+  const teamCommitments = commitments.yardai ?? {};
+  const { committed: committedByMonth, unknown: unknownByMonth } = computeCommittedUnknown(teamCommitments, PEOPLE, monthCount);
   const [editingTrack, setEditingTrack] = useState(null);
   const timelineStripRef = useRef(null);
   const rowRefs = useRef([]);
   const rows = buildRowsWithOverrides(TRACKS);
   const { draggingTrackId, handleBarPointerDown } = useTrackDrag(
     timelineStripRef,
-    MONTHS.length,
+    monthCount,
     updateTrack,
     (track, didDrag) => { if (!didDrag) setEditingTrack(track); },
     rowRefs
   );
-  const committedByMonth = MONTH_COMMITTED(MONTHS.length);
-  const unknownByMonth = MONTH_UNKNOWN(MONTHS.length);
 
   return (
     <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", background: "#f8fafc", minHeight: "100vh", padding: "28px 32px", color: "#0f172a", maxWidth: 1200, margin: "0 auto" }}>
@@ -169,11 +176,18 @@ export default function YardAITeam() {
               </div>
               <div style={{ flex: 1, display: "flex", gap: 4 }}>
                 {MONTHS.map((_, mi) => {
-                  const state = COMMITMENTS[person.name][mi];
+                  const arr = teamCommitments[person.name];
+                  const state = Array.isArray(arr) ? arr[mi] : false;
                   return (
-                    <div key={mi} style={{ flex: 1, height: 28, borderRadius: 6, background: state === true ? "#1e293b" : state === null ? `repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 3px, #f8fafc 3px, #f8fafc 6px)` : "#f1f5f9", border: state === null ? "1.5px dashed #cbd5e1" : "1.5px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: state === null ? 11 : 11, fontWeight: 800, color: state === true ? "white" : "#94a3b8" }}>
+                    <button
+                      key={mi}
+                      type="button"
+                      onClick={() => updateCommitment("yardai", person.name, mi, nextCommitmentValue(state))}
+                      style={{ flex: 1, height: 28, borderRadius: 6, background: state === true ? "#1e293b" : state === null ? `repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 3px, #f8fafc 3px, #f8fafc 6px)` : "#f1f5f9", border: state === null ? "1.5px dashed #cbd5e1" : "1.5px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: state === true ? "white" : "#94a3b8", cursor: "pointer" }}
+                      title="Click to cycle: available → committed → unknown"
+                    >
                       {state === true ? "●" : state === null ? "?" : ""}
-                    </div>
+                    </button>
                   );
                 })}
               </div>

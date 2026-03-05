@@ -18,21 +18,31 @@ const PHASE_LABELS = [
   { start: 3,   end: 6,   label: "Strategic TBD", sublabel: "Direction needs decision",   bg: "#f5f3ff", border: "#c4b5fd", text: "#7c3aed" },
 ];
 
-const COMMITMENTS = {
-  "Josh": [true, true,  true,  true, true, true],
-  "Matt": [true, "leave", "returning", true, true, true],
-};
+function nextCommitmentValueMobile(current) {
+  const cycle = [false, true, "leave", "returning"];
+  const i = cycle.indexOf(current);
+  return cycle[(i + 1) % 4];
+}
 
-const EFFECTIVE_CAPACITY = [2, 1, 1, 2, 2, 2];
-
-const MONTH_COMMITTED = (monthCount) =>
-  Array.from({ length: monthCount }, (_, mi) =>
-    Object.values(COMMITMENTS).filter(c => c[mi] === true).length
-  );
-const MONTH_UNKNOWN = (monthCount) =>
-  Array.from({ length: monthCount }, (_, mi) =>
-    Object.values(COMMITMENTS).filter(c => c[mi] === "returning").length
-  );
+function computeMobileCapacity(commitments, people, monthCount) {
+  const committed = [];
+  const unknown = [];
+  const effective = [];
+  for (let mi = 0; mi < monthCount; mi++) {
+    let c = 0, u = 0, leave = 0;
+    people.forEach((p) => {
+      const arr = commitments[p.name];
+      const v = Array.isArray(arr) ? arr[mi] : undefined;
+      if (v === true) c++;
+      else if (v === "returning") u++;
+      if (v === "leave") leave++;
+    });
+    committed.push(c);
+    unknown.push(u);
+    effective.push(people.length - leave);
+  }
+  return { committed, unknown, effective };
+}
 
 const OPEN_QUESTIONS = [
   { id: "Q1", severity: "high", question: "Josh's split — when does he move to 100% Mobile App?", detail: "Currently 75% Mobile App / 25% PPCX in March. With Matt on leave, Josh likely needs to be 100% Mobile App from April. This is a shared decision with the PPCX team." },
@@ -56,22 +66,23 @@ const NAME_COL = 80;
 const TEAM_ID = "mobile";
 
 export default function MobileAppTeam() {
-  const { range, tracks, updateTrack } = useTimeline();
+  const { range, tracks, commitments, updateTrack, updateCommitment } = useTimeline();
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
+  const monthCount = MONTHS.length;
   const TRACKS = tracks.mobile ?? [];
+  const teamCommitments = commitments.mobile ?? {};
+  const { committed: committedByMonth, unknown: unknownByMonth, effective: effectiveCapacity } = computeMobileCapacity(teamCommitments, PEOPLE, monthCount);
   const [editingTrack, setEditingTrack] = useState(null);
   const timelineStripRef = useRef(null);
   const rowRefs = useRef([]);
   const rows = buildRowsWithOverrides(TRACKS);
   const { draggingTrackId, handleBarPointerDown } = useTrackDrag(
     timelineStripRef,
-    MONTHS.length,
+    monthCount,
     updateTrack,
     (track, didDrag) => { if (!didDrag) setEditingTrack(track); },
     rowRefs
   );
-  const committedByMonth = MONTH_COMMITTED(MONTHS.length);
-  const unknownByMonth = MONTH_UNKNOWN(MONTHS.length);
 
   return (
     <div style={{ fontFamily: "'DM Sans', 'Helvetica Neue', sans-serif", background: "#f8fafc", minHeight: "100vh", padding: "28px 32px", color: "#0f172a", maxWidth: 1200, margin: "0 auto" }}>
@@ -175,18 +186,26 @@ export default function MobileAppTeam() {
               </div>
               <div style={{ flex: 1, display: "flex", gap: 4 }}>
                 {MONTHS.map((_, mi) => {
-                  const state = COMMITMENTS[person.name][mi];
+                  const arr = teamCommitments[person.name];
+                  const state = Array.isArray(arr) ? arr[mi] : (mi === 0 ? true : false);
                   return (
-                    <div key={mi} style={{
-                      flex: 1, height: 28, borderRadius: 6,
-                      background: state === "leave" ? "#fef2f2" : state === "returning" ? `repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 3px, #f8fafc 3px, #f8fafc 6px)` : state === true ? "#1e293b" : "#f1f5f9",
-                      border: state === "leave" ? "1.5px solid #fca5a5" : state === "returning" ? "1.5px dashed #cbd5e1" : "1.5px solid transparent",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: state === "leave" ? 8 : 11, fontWeight: 800,
-                      color: state === "leave" ? "#dc2626" : state === true ? "white" : "#94a3b8",
-                    }}>
+                    <button
+                      key={mi}
+                      type="button"
+                      onClick={() => updateCommitment("mobile", person.name, mi, nextCommitmentValueMobile(state))}
+                      style={{
+                        flex: 1, height: 28, borderRadius: 6,
+                        background: state === "leave" ? "#fef2f2" : state === "returning" ? `repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 3px, #f8fafc 3px, #f8fafc 6px)` : state === true ? "#1e293b" : "#f1f5f9",
+                        border: state === "leave" ? "1.5px solid #fca5a5" : state === "returning" ? "1.5px dashed #cbd5e1" : "1.5px solid transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: state === "leave" ? 8 : 11, fontWeight: 800,
+                        color: state === "leave" ? "#dc2626" : state === true ? "white" : "#94a3b8",
+                        cursor: "pointer",
+                      }}
+                      title="Click to cycle: available → committed → leave → returning"
+                    >
                       {state === true ? "●" : state === "leave" ? "Pat. Leave" : state === "returning" ? "?" : ""}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -201,7 +220,7 @@ export default function MobileAppTeam() {
             <div style={{ flex: 1, display: "flex", gap: 4 }}>
               {MONTHS.map((_, mi) => {
                 const committed = committedByMonth[mi];
-                const effective = EFFECTIVE_CAPACITY[mi];
+                const effective = effectiveCapacity[mi];
                 const unknown = unknownByMonth[mi];
                 const pct = effective === 0 ? 0 : committed / effective;
                 const c = getColor(pct);
