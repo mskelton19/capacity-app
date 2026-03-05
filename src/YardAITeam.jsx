@@ -19,10 +19,10 @@ const PEOPLE = [
 ];
 
 const PHASE_LABELS = [
-  { start: 0,   end: 1.0, label: "Foundation",         sublabel: "Yard Status · Chat History · Checkout · Product Recs · Weather", bg: "#f0f9ff", border: "#bae6fd", text: "#0369a1" },
-  { start: 1.0, end: 2.77,label: "Sunny intelligence", sublabel: "Seasonality · Specialized Flows · CS Handoff · Gladly",          bg: "#ecfeff", border: "#a5f3fc", text: "#0e7490" },
-  { start: 2.77,end: 3.0, label: "",                   sublabel: "",                                                                bg: "#f8fafc", border: "#e2e8f0", text: "#94a3b8" },
-  { start: 3.0, end: 6,   label: "Strategic TBD",      sublabel: "Save Tasks + Season Recap",                                      bg: "#f5f3ff", border: "#c4b5fd", text: "#7c3aed" },
+  { start: 0,   end: 1.0, label: "Foundation",      sublabel: "Yard Status, Chat, Checkout, Recs, Weather", bg: "#f0f9ff", border: "#bae6fd", text: "#0369a1" },
+  { start: 1.0, end: 2.77, label: "Sunny intelligence", sublabel: "Seasonality, Flows, CS Handoff, Gladly", bg: "#ecfeff", border: "#a5f3fc", text: "#0e7490" },
+  { start: 2.77,end: 3.0, label: "",                   sublabel: "", bg: "#f8fafc", border: "#e2e8f0", text: "#94a3b8" },
+  { start: 3.0, end: 6,   label: "Strategic TBD",   sublabel: "Save Tasks + Season Recap", bg: "#f5f3ff", border: "#c4b5fd", text: "#7c3aed" },
 ];
 
 function nextCommitmentValue(current) {
@@ -83,12 +83,12 @@ export default function YardAITeam() {
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 2, color: "#94a3b8", textTransform: "uppercase", marginBottom: 6 }}>Capacity Review · Draft</div>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-          <div>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+          <div style={{ minWidth: 0 }}>
             <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>Yard AI Team</h1>
-            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{MONTHS[0]} – {MONTHS[MONTHS.length - 1]} {range.year ?? 2026} &nbsp;·&nbsp; 4 people &nbsp;·&nbsp; 1 PM, 2 AI Eng, 1 Data Sci</p>
+            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{MONTHS[0]} – {MONTHS[MONTHS.length - 1]} {range.year ?? 2026} · 4 people · 1 PM, 2 AI Eng, 1 Data Sci</p>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
             {PEOPLE.map(p => (
               <div key={p.name} style={{ background: "white", border: "1.5px solid #e2e8f0", borderRadius: 10, padding: "6px 12px", fontSize: 12, fontWeight: 700, color: "#334155", display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
                 <span>{p.name}</span>
@@ -119,9 +119,9 @@ export default function YardAITeam() {
               const left = (phase.start / MONTHS.length) * 100;
               const width = ((phase.end - phase.start) / MONTHS.length) * 100;
               return (
-                <div key={i} style={{ position: "absolute", left: `${left}%`, width: `${width}%`, top: 0, bottom: 0, background: phase.bg, borderRight: i < PHASE_LABELS.length - 1 ? `2px solid ${phase.border}` : "none", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: phase.text, whiteSpace: "nowrap" }}>{phase.label}</div>
-                  <div style={{ fontSize: 9, color: phase.text, opacity: 0.75, whiteSpace: "nowrap" }}>{phase.sublabel}</div>
+                <div key={i} style={{ position: "absolute", left: `${left}%`, width: `${width}%`, top: 0, bottom: 0, background: phase.bg, borderRight: i < PHASE_LABELS.length - 1 ? `2px solid ${phase.border}` : "none", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minWidth: 0, padding: "0 6px", boxSizing: "border-box" }}>
+                  {phase.label && <div style={{ fontSize: 10, fontWeight: 800, color: phase.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>{phase.label}</div>}
+                  {phase.sublabel && <div style={{ fontSize: 9, color: phase.text, opacity: 0.75, overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", textAlign: "center", lineHeight: 1.2 }}>{phase.sublabel}</div>}
                 </div>
               );
             })}
