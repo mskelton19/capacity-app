@@ -5,17 +5,17 @@ import TrackEditModal from "./components/TrackEditModal";
 import { useTrackDrag } from "./hooks/useTrackDrag";
 import { buildRowsWithOverrides } from "./utils/timelineRows";
 
-const TEAM_SIZE = 7;
-
 const PEOPLE = [
-  { name: "Chelsea", role: "PM" },
-  { name: "Francesco", role: "Design" },
+  { name: "Chelsea", role: "PM", countsForCapacity: false },
+  { name: "Francesco", role: "Design", countsForCapacity: false },
   { name: "Josh", role: "FE" },
   { name: "Justin", role: "FE" },
   { name: "Bryan D", role: "BE" },
   { name: "Brian W", role: "BE" },
   { name: "Cory", role: "BE" },
 ];
+const CAPACITY_PEOPLE = PEOPLE.filter((p) => p.countsForCapacity !== false);
+const TEAM_SIZE = CAPACITY_PEOPLE.length;
 
 const PHASE_LABELS = [
   { start: 0, end: 1, label: "All hands on deck", sublabel: "5 of 5 engineers committed", bg: "#fef2f2", border: "#fca5a5", text: "#dc2626" },
@@ -68,7 +68,7 @@ export default function PPCXTeam() {
   const monthCount = MONTHS.length;
   const TRACKS = tracks.ppcx ?? [];
   const teamCommitments = commitments.ppcx ?? {};
-  const { committed: committedByMonth, unknown: unknownByMonth } = computeCommittedUnknown(teamCommitments, PEOPLE, monthCount);
+  const { committed: committedByMonth, unknown: unknownByMonth } = computeCommittedUnknown(teamCommitments, CAPACITY_PEOPLE, monthCount);
   const [editingTrack, setEditingTrack] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const timelineStripRef = useRef(null);
@@ -176,7 +176,7 @@ export default function PPCXTeam() {
             Team Capacity · Engineers with assigned work
           </div>
 
-          {PEOPLE.map(person => (
+          {CAPACITY_PEOPLE.map(person => (
             <div key={person.name} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
               <div style={{ width: NAME_COL, flexShrink: 0, paddingLeft: 16 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>{person.name}</span>

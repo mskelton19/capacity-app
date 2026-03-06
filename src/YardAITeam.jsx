@@ -7,18 +7,19 @@ import { useTrackDrag } from "./hooks/useTrackDrag";
 import { buildRowsWithOverrides } from "./utils/timelineRows";
 import { getQuestionStatusStyle } from "./utils/questionStatus";
 
-const TEAM_SIZE = 6;
 const NAME_COL = 80;
 const TEAM_ID = "yardai";
 
 const PEOPLE = [
-  { name: "Mike", role: "PM" },
-  { name: "Francesco", role: "Design" },
+  { name: "Mike", role: "PM", countsForCapacity: false },
+  { name: "Francesco", role: "Design", countsForCapacity: false },
   { name: "Sergio", role: "Principal Eng" },
   { name: "James",  role: "AI Eng" },
   { name: "Adam",   role: "AI Eng" },
   { name: "Maggie", role: "Data Sci" },
 ];
+const CAPACITY_PEOPLE = PEOPLE.filter((p) => p.countsForCapacity !== false);
+const TEAM_SIZE = CAPACITY_PEOPLE.length;
 
 const PHASE_LABELS = [
   { start: 0,   end: 1.0, label: "Foundation",         sublabel: "Yard Status, Chat, Checkout, Recs, Weather", bg: "#f0f9ff", border: "#bae6fd", text: "#0369a1" },
@@ -63,7 +64,7 @@ export default function YardAITeam() {
   const monthCount = MONTHS.length;
   const TRACKS = tracks.yardai ?? [];
   const teamCommitments = commitments.yardai ?? {};
-  const { committed: committedByMonth, unknown: unknownByMonth } = computeCommittedUnknown(teamCommitments, PEOPLE, monthCount);
+  const { committed: committedByMonth, unknown: unknownByMonth } = computeCommittedUnknown(teamCommitments, CAPACITY_PEOPLE, monthCount);
   const [editingTrack, setEditingTrack] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const timelineStripRef = useRef(null);
@@ -175,7 +176,7 @@ export default function YardAITeam() {
             Team Capacity · People with assigned work
           </div>
 
-          {PEOPLE.map(person => (
+          {CAPACITY_PEOPLE.map(person => (
             <div key={person.name} style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
               <div style={{ width: NAME_COL, flexShrink: 0, paddingLeft: 16 }}>
                 <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>{person.name}</span>
