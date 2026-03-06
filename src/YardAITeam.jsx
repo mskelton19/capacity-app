@@ -7,22 +7,23 @@ import { useTrackDrag } from "./hooks/useTrackDrag";
 import { buildRowsWithOverrides } from "./utils/timelineRows";
 import { getQuestionStatusStyle } from "./utils/questionStatus";
 
-const TEAM_SIZE = 4;
+const TEAM_SIZE = 6;
 const NAME_COL = 80;
 const TEAM_ID = "yardai";
 
 const PEOPLE = [
-  { name: "Sergio", role: "PM" },
+  { name: "Mike", role: "PM" },
+  { name: "Francesco", role: "Design" },
+  { name: "Sergio", role: "Principal Eng" },
   { name: "James",  role: "AI Eng" },
   { name: "Adam",   role: "AI Eng" },
   { name: "Maggie", role: "Data Sci" },
 ];
 
 const PHASE_LABELS = [
-  { start: 0,   end: 1.0, label: "Foundation",      sublabel: "Yard Status, Chat, Checkout, Recs, Weather", bg: "#f0f9ff", border: "#bae6fd", text: "#0369a1" },
-  { start: 1.0, end: 2.77, label: "Sunny intelligence", sublabel: "Seasonality, Flows, CS Handoff, Gladly", bg: "#ecfeff", border: "#a5f3fc", text: "#0e7490" },
-  { start: 2.77,end: 3.0, label: "",                   sublabel: "", bg: "#f8fafc", border: "#e2e8f0", text: "#94a3b8" },
-  { start: 3.0, end: 6,   label: "Strategic TBD",   sublabel: "Save Tasks + Season Recap", bg: "#f5f3ff", border: "#c4b5fd", text: "#7c3aed" },
+  { start: 0,   end: 1.0, label: "Foundation",         sublabel: "Yard Status, Chat, Checkout, Recs, Weather", bg: "#f0f9ff", border: "#bae6fd", text: "#0369a1" },
+  { start: 1.0, end: 3.0, label: "Sunny intelligence",  sublabel: "Seasonality, Flows, CS Handoff, Gladly", bg: "#ecfeff", border: "#a5f3fc", text: "#0e7490" },
+  { start: 3.0, end: 6,  label: "Strategic TBD",       sublabel: "Save Tasks + Season Recap", bg: "#f5f3ff", border: "#c4b5fd", text: "#7c3aed" },
 ];
 
 function nextCommitmentValue(current) {
@@ -86,7 +87,7 @@ export default function YardAITeam() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
           <div style={{ minWidth: 0 }}>
             <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>Yard AI Team</h1>
-            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{MONTHS[0]} – {MONTHS[MONTHS.length - 1]} {range.year ?? 2026} · 4 people · 1 PM, 2 AI Eng, 1 Data Sci</p>
+            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{MONTHS[0]} – {MONTHS[MONTHS.length - 1]} {range.year ?? 2026} · 6 people · 1 PM, 1 Design, 1 Principal Eng, 2 AI Eng, 1 Data Sci</p>
           </div>
           <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
             {PEOPLE.map(p => (

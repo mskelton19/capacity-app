@@ -5,9 +5,11 @@ import TrackEditModal from "./components/TrackEditModal";
 import { useTrackDrag } from "./hooks/useTrackDrag";
 import { buildRowsWithOverrides } from "./utils/timelineRows";
 
-const TEAM_SIZE = 2;
+const TEAM_SIZE = 4;
 
 const PEOPLE = [
+  { name: "Mike", role: "PM" },
+  { name: "Megan", role: "Design" },
   { name: "Josh", role: "FE" },
   { name: "Matt", role: "FE" },
 ];
@@ -88,7 +90,7 @@ export default function MobileAppTeam() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>Mobile App Team</h1>
-            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{MONTHS[0]} – {MONTHS[MONTHS.length - 1]} {range.year ?? 2026} &nbsp;·&nbsp; 2 engineers &nbsp;·&nbsp; Matt on pat. leave early Apr – mid May</p>
+            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{MONTHS[0]} – {MONTHS[MONTHS.length - 1]} {range.year ?? 2026} · 4 people · 1 PM, 1 Design, 2 FE · Matt on pat. leave early Apr – mid May</p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             {PEOPLE.map(p => (

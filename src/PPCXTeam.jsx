@@ -5,9 +5,11 @@ import TrackEditModal from "./components/TrackEditModal";
 import { useTrackDrag } from "./hooks/useTrackDrag";
 import { buildRowsWithOverrides } from "./utils/timelineRows";
 
-const TEAM_SIZE = 5;
+const TEAM_SIZE = 7;
 
 const PEOPLE = [
+  { name: "Chelsea", role: "PM" },
+  { name: "Francesco", role: "Design" },
   { name: "Josh", role: "FE" },
   { name: "Justin", role: "FE" },
   { name: "Bryan D", role: "BE" },
@@ -88,7 +90,7 @@ export default function PPCXTeam() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div>
             <h1 style={{ fontSize: 28, fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>PPCX Team</h1>
-            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{MONTHS[0]} – {MONTHS[MONTHS.length - 1]} {range.year ?? 2026} &nbsp;·&nbsp; 5 engineers &nbsp;·&nbsp; 2 FE, 3 BE</p>
+            <p style={{ margin: "6px 0 0", color: "#64748b", fontSize: 14 }}>{MONTHS[0]} – {MONTHS[MONTHS.length - 1]} {range.year ?? 2026} · 7 people · 1 PM, 1 Design, 2 FE, 3 BE</p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             {PEOPLE.map(p => (

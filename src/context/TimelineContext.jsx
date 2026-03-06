@@ -43,21 +43,27 @@ const DEFAULT_TRACKS = {
 
 const DEFAULT_COMMITMENTS = {
   ppcx: {
-    "Josh":    [true,  false, false, false, false, false],
-    "Justin":  [true,  true,  true,  false, false, false],
-    "Bryan D": [true,  true,  true,  false, false, false],
-    "Brian W": [true,  true,  true,  true,  true,  true ],
-    "Cory":    [true,  true,  true,  false, false, false],
+    "Chelsea":   [true,  true,  true,  true,  true,  true ],
+    "Francesco": [true,  true,  true,  true,  true,  true ],
+    "Josh":      [true,  false, false, false, false, false],
+    "Justin":    [true,  true,  true,  false, false, false],
+    "Bryan D":   [true,  true,  true,  false, false, false],
+    "Brian W":   [true,  true,  true,  true,  true,  true ],
+    "Cory":      [true,  true,  true,  false, false, false],
   },
   mobile: {
-    "Josh": [true, true,  true,  true, true, true],
-    "Matt": [true, "leave", "returning", true, true, true],
+    "Mike":   [true, true, true, true, true, true],
+    "Megan":  [true, true, true, true, true, true],
+    "Josh":   [true, true,  true,  true, true, true],
+    "Matt":   [true, "leave", "returning", true, true, true],
   },
   yardai: {
-    "Sergio": [true,  true,  false, false, false, false],
-    "James":  [false, true,  true,  false, false, false],
-    "Adam":   [false, true,  true,  false, false, false],
-    "Maggie": [false, true,  true,  false, false, false],
+    "Mike":      [true,  true,  true,  true,  true,  true ],
+    "Francesco": [true,  true,  true,  true,  true,  true ],
+    "Sergio":    [true,  true,  false, false, false, false],
+    "James":     [false, true,  true,  false, false, false],
+    "Adam":      [false, true,  true,  false, false, false],
+    "Maggie":    [false, true,  true,  false, false, false],
   },
 };
 

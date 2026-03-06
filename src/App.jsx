@@ -9,9 +9,9 @@ import RangeEditModal from "./components/RangeEditModal";
 import LoginPage from "./components/LoginPage";
 
 const TABS = [
-  { id: "ppcx",      label: "PPCX",           sublabel: "5 engineers" },
-  { id: "mobile",    label: "Mobile App",      sublabel: "2 engineers" },
-  { id: "yardai",    label: "Yard AI",         sublabel: "4 people" },
+  { id: "ppcx",      label: "PPCX",           sublabel: "7 people" },
+  { id: "mobile",    label: "Mobile App",      sublabel: "4 people" },
+  { id: "yardai",    label: "Yard AI",         sublabel: "6 people" },
   { id: "questions", label: "Open Questions",  sublabelKey: "questions" },
 ];
 
