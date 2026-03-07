@@ -30,6 +30,8 @@ export default function LoginPage({ onSuccess }) {
         justifyContent: "center",
         background: "#f8fafc",
         fontFamily: "'DM Sans', sans-serif",
+        padding: 16,
+        boxSizing: "border-box",
       }}
     >
       <div
@@ -37,9 +39,10 @@ export default function LoginPage({ onSuccess }) {
           background: "white",
           borderRadius: 16,
           boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
-          padding: 32,
+          padding: "clamp(20px, 5vw, 32px)",
           width: "100%",
           maxWidth: 360,
+          boxSizing: "border-box",
         }}
       >
         <h1 style={{ fontSize: 20, fontWeight: 800, margin: "0 0 8px", color: "#0f172a" }}>
