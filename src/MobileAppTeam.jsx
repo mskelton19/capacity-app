@@ -65,7 +65,7 @@ const TEAM_ID = "mobile";
 export default function MobileAppTeam() {
   const isMobile = useIsMobile();
   const { isEditor } = useAuth();
-  const { range, tracks, commitments, questions, updateTrack, updateCommitment, addQuestion, updateQuestion } = useTimeline();
+  const { range, tracks, commitments, questions, updateTrack, addTrack, removeTrack, updateCommitment, addQuestion, updateQuestion } = useTimeline();
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
   const monthCount = MONTHS.length;
   const TRACKS = tracks.mobile ?? [];
@@ -189,8 +189,19 @@ export default function MobileAppTeam() {
         </div>
 
         <div style={{ padding: isMobile ? "12px 12px 12px 0" : "12px 16px 12px 0" }}>
-          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase", marginBottom: isMobile ? 8 : 8, paddingLeft: timelineLeftCol }}>
-            Team Capacity · Engineers with assigned work
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 8 : 8, paddingLeft: timelineLeftCol, gap: 12 }}>
+            <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase" }}>
+              Team Capacity · Engineers with assigned work
+            </div>
+            {isEditor && (
+              <button
+                type="button"
+                onClick={() => setEditingTrack({ isNew: true })}
+                style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#6366f1", background: "none", border: "none", cursor: "pointer" }}
+              >
+                + Add project
+              </button>
+            )}
           </div>
 
           {CAPACITY_PEOPLE.map(person => (
@@ -313,7 +324,18 @@ export default function MobileAppTeam() {
         <TrackEditModal
           track={editingTrack}
           monthCount={MONTHS.length}
-          onSave={(updates) => updateTrack("mobile", editingTrack.id, updates)}
+          months={MONTHS}
+          year={range.year}
+          isCreate={editingTrack.isNew}
+          onSave={(updates) => {
+            if (editingTrack.isNew) {
+              addTrack("mobile", updates);
+            } else {
+              updateTrack("mobile", editingTrack.id, updates);
+            }
+            setEditingTrack(null);
+          }}
+          onDelete={editingTrack.isNew ? undefined : () => removeTrack("mobile", editingTrack.id)}
           onClose={() => setEditingTrack(null)}
         />
       )}

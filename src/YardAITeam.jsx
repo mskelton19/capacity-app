@@ -61,7 +61,7 @@ function getColor(pct) {
 export default function YardAITeam() {
   const isMobile = useIsMobile();
   const { isEditor } = useAuth();
-  const { range, tracks, commitments, questions, updateTrack, updateCommitment, addQuestion, updateQuestion } = useTimeline();
+  const { range, tracks, commitments, questions, updateTrack, addTrack, removeTrack, updateCommitment, addQuestion, updateQuestion } = useTimeline();
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
   const monthCount = MONTHS.length;
   const TRACKS = tracks.yardai ?? [];
@@ -116,7 +116,6 @@ export default function YardAITeam() {
 
       <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", marginBottom: 20, ...(isMobile && { marginLeft: -16, marginRight: -16, width: "calc(100% + 32px)" }) }}>
         <div style={{ background: "white", borderRadius: isMobile ? 0 : 16, boxShadow: isMobile ? "none" : "0 2px 12px rgba(0,0,0,0.07)", overflow: "hidden", minWidth: timelineMinWidth }}>
-
         {/* Month headers */}
         <div style={{ display: "flex", borderBottom: "2px solid #e2e8f0", background: "#f8fafc" }}>
           <div style={{ width: timelineLeftCol, flexShrink: 0 }} />
@@ -187,8 +186,19 @@ export default function YardAITeam() {
 
         {/* Team capacity */}
         <div style={{ padding: isMobile ? "12px 12px 12px 0" : "12px 16px 12px 0" }}>
-          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase", marginBottom: isMobile ? 8 : 8, paddingLeft: timelineLeftCol }}>
-            Team Capacity · People with assigned work
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 8 : 8, paddingLeft: timelineLeftCol, gap: 12 }}>
+            <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase" }}>
+              Team Capacity · People with assigned work
+            </div>
+            {isEditor && (
+              <button
+                type="button"
+                onClick={() => setEditingTrack({ isNew: true })}
+                style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#6366f1", background: "none", border: "none", cursor: "pointer" }}
+              >
+                + Add project
+              </button>
+            )}
           </div>
 
           {CAPACITY_PEOPLE.map(person => (
@@ -324,7 +334,18 @@ export default function YardAITeam() {
         <TrackEditModal
           track={editingTrack}
           monthCount={MONTHS.length}
-          onSave={(updates) => updateTrack("yardai", editingTrack.id, updates)}
+          months={MONTHS}
+          year={range.year}
+          isCreate={editingTrack.isNew}
+          onSave={(updates) => {
+            if (editingTrack.isNew) {
+              addTrack("yardai", updates);
+            } else {
+              updateTrack("yardai", editingTrack.id, updates);
+            }
+            setEditingTrack(null);
+          }}
+          onDelete={editingTrack.isNew ? undefined : () => removeTrack("yardai", editingTrack.id)}
           onClose={() => setEditingTrack(null)}
         />
       )}

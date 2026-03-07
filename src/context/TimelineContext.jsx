@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { fetchAppState, saveAppState } from "../api/appState";
 import { useAuth } from "./AuthContext";
+import { buildRowsWithOverrides } from "../utils/timelineRows";
 
 const STORAGE_KEY = "capacity-app-timelines";
 
@@ -266,10 +267,16 @@ export function TimelineProvider({ children }) {
 
   const addTrack = useCallback((teamId, track) => {
     const id = `${teamId}-${Date.now()}`;
-    setTracksState((prev) => ({
-      ...prev,
-      [teamId]: [...(prev[teamId] ?? []), { ...track, id }],
-    }));
+    setTracksState((prev) => {
+      const currentList = prev[teamId] ?? [];
+      const currentRows = buildRowsWithOverrides(currentList);
+      const newRowIndex = currentRows.length;
+      const newTrack = { ...track, id, rowIndex: newRowIndex };
+      return {
+        ...prev,
+        [teamId]: [...currentList, newTrack],
+      };
+    });
     return id;
   }, []);
 
