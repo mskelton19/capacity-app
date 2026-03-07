@@ -151,7 +151,7 @@ export default function YardAITeam() {
               <div style={{ width: timelineLeftCol, flexShrink: 0 }} />
               <div ref={ri === 0 ? timelineStripRef : null} style={{ flex: 1, position: "relative", height: barHeight }}>
                 {MONTHS.map((_, i) => i > 0 && (
-                  <div key={i} style={{ position: "absolute", left: `${(i / MONTHS.length) * 100}%`, top: 0, bottom: 0, borderLeft: "1px dashed #e2e8f0", pointerEvents: "none" }} />
+                  <div key={i} style={{ position: "absolute", left: `${(i / MONTHS.length) * 100}%`, top: 0, bottom: 0, borderLeft: "1.5px solid #cbd5e1", pointerEvents: "none" }} />
                 ))}
                 {row.map(track => {
                   const left = (track.start / MONTHS.length) * 100;
@@ -185,13 +185,13 @@ export default function YardAITeam() {
         </div>
 
         {/* Team capacity */}
-        <div style={{ padding: isMobile ? "12px 12px 12px 0" : "20px 16px 20px 0" }}>
-          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase", marginBottom: isMobile ? 8 : 14, paddingLeft: timelineLeftCol }}>
+        <div style={{ padding: isMobile ? "12px 12px 12px 0" : "12px 16px 12px 0" }}>
+          <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase", marginBottom: isMobile ? 8 : 8, paddingLeft: timelineLeftCol }}>
             Team Capacity · People with assigned work
           </div>
 
           {CAPACITY_PEOPLE.map(person => (
-            <div key={person.name} style={{ marginBottom: isMobile ? 4 : 6 }}>
+            <div key={person.name} style={{ marginBottom: isMobile ? 4 : 3 }}>
               {isMobile ? (
                 <div style={{ display: "flex", alignItems: "center" }}>
                   <div style={{ width: nameCol, flexShrink: 0, paddingLeft: 6 }}>
@@ -214,12 +214,12 @@ export default function YardAITeam() {
                   </div>
                 </div>
               ) : (
-                <>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#334155", marginBottom: 4 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 80, flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#334155" }}>
                     <span>{person.name}</span>
                     <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600, marginLeft: 6 }}>{person.role}</span>
                   </div>
-                  <div style={{ display: "flex", gap: 4 }}>
+                  <div style={{ flex: 1, display: "flex", gap: 3 }}>
                 {MONTHS.map((_, mi) => {
                   const arr = teamCommitments[person.name];
                   const state = Array.isArray(arr) ? arr[mi] : false;
@@ -229,7 +229,7 @@ export default function YardAITeam() {
                       type="button"
                       disabled={!isEditor}
                       onClick={() => isEditor && updateCommitment("yardai", person.name, mi, nextCommitmentValue(state))}
-                      style={{ flex: 1, height: 28, borderRadius: 6, background: state === true ? "#1e293b" : state === null ? `repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 3px, #f8fafc 3px, #f8fafc 6px)` : "#f1f5f9", border: state === null ? "1.5px dashed #cbd5e1" : "1.5px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: state === true ? "white" : "#94a3b8", cursor: isEditor ? "pointer" : "default" }}
+                      style={{ flex: 1, height: 22, borderRadius: 5, background: state === true ? "#1e293b" : state === null ? `repeating-linear-gradient(45deg, #e2e8f0, #e2e8f0 3px, #f8fafc 3px, #f8fafc 6px)` : "#f1f5f9", border: state === null ? "1.5px dashed #cbd5e1" : "1.5px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: state === true ? "white" : "#94a3b8", cursor: isEditor ? "pointer" : "default" }}
                       title={isEditor ? "Click to cycle: available → committed → unknown" : undefined}
                     >
                       {state === true ? "●" : state === null ? "?" : ""}
@@ -237,17 +237,17 @@ export default function YardAITeam() {
                   );
                 })}
                   </div>
-                </>
+                </div>
               )}
             </div>
           ))}
 
-          <div style={{ borderTop: "1px solid #e2e8f0", margin: isMobile ? "10px 0" : "14px 0" }} />
+          <div style={{ borderTop: "1px solid #e2e8f0", margin: isMobile ? "10px 0" : "8px 0" }} />
 
           {/* Summary */}
           {isMobile ? (
             <div style={{ display: "flex", alignItems: "flex-start", flexWrap: "wrap" }}>
-              <div style={{ width: nameCol, flexShrink: 0, paddingLeft: 6, fontSize: 10, fontWeight: 800, color: "#475569", paddingTop: 12 }}>Summary</div>
+              <div style={{ width: nameCol, flexShrink: 0, paddingLeft: 6, fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase", paddingTop: 12 }}>Summary</div>
               <div style={{ flex: 1, display: "flex", gap: 2 }}>
               {MONTHS.map((_, mi) => {
                 const committed = committedByMonth[mi];
@@ -256,7 +256,7 @@ export default function YardAITeam() {
                 const c = getColor(pct);
                 return (
                   <div key={mi} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                    <div style={{ height: 12, display: "flex", justifyContent: "center" }}>{unknown > 0 && <div style={{ fontSize: 9, fontWeight: 800, color: "#64748b", background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 10, padding: "1px 6px" }}>+{unknown}?</div>}</div>
+                    <div style={{ height: 4, display: "flex", justifyContent: "center" }}>{unknown > 0 && <div style={{ fontSize: 9, fontWeight: 800, color: "#64748b", background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 10, padding: "1px 6px" }}>+{unknown}?</div>}</div>
                     <div style={{ borderRadius: 6, border: `1.5px solid ${c.border}`, background: c.bg, padding: "6px 4px 4px", display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
                       <div style={{ width: "100%", height: 4, background: "#e2e8f0", borderRadius: 3, overflow: "hidden" }}><div style={{ width: `${Math.min(pct * 100, 100)}%`, height: "100%", background: c.fill, borderRadius: 3 }} /></div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}><span style={{ fontSize: 16, fontWeight: 900, color: c.text, lineHeight: 1 }}>{committed}</span><span style={{ fontSize: 9, fontWeight: 700, color: c.text, opacity: 0.6 }}>/ {TEAM_SIZE}</span></div>
@@ -269,7 +269,7 @@ export default function YardAITeam() {
             </div>
           ) : (
             <>
-              <div style={{ fontSize: 11, fontWeight: 800, color: "#475569", marginBottom: 8 }}>Summary</div>
+              <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase", marginBottom: 2 }}>Summary</div>
               <div style={{ display: "flex", gap: 4 }}>
               {MONTHS.map((_, mi) => {
                 const committed = committedByMonth[mi];
@@ -278,7 +278,7 @@ export default function YardAITeam() {
                 const c = getColor(pct);
                 return (
                   <div key={mi} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
-                    <div style={{ height: 16, display: "flex", justifyContent: "center" }}>{unknown > 0 && <div style={{ fontSize: 9, fontWeight: 800, color: "#64748b", background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 10, padding: "1px 6px" }}>+{unknown}?</div>}</div>
+                    <div style={{ height: 4, display: "flex", justifyContent: "center" }}>{unknown > 0 && <div style={{ fontSize: 9, fontWeight: 800, color: "#64748b", background: "#f1f5f9", border: "1px solid #cbd5e1", borderRadius: 10, padding: "1px 6px" }}>+{unknown}?</div>}</div>
                     <div style={{ borderRadius: 10, border: `1.5px solid ${c.border}`, background: c.bg, padding: "10px 8px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                       <div style={{ width: "100%", height: 6, background: "#e2e8f0", borderRadius: 3, overflow: "hidden" }}><div style={{ width: `${Math.min(pct * 100, 100)}%`, height: "100%", background: c.fill, borderRadius: 3 }} /></div>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}><span style={{ fontSize: 20, fontWeight: 900, color: c.text, lineHeight: 1 }}>{committed}</span><span style={{ fontSize: 10, fontWeight: 700, color: c.text, opacity: 0.6 }}>/ {TEAM_SIZE}</span></div>
