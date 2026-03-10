@@ -2,6 +2,14 @@ import { useState, useEffect, useMemo } from "react";
 
 const DEFAULT_NEW_COLOR = "#64748b";
 
+const TRACK_COLOR_OPTIONS = [
+  "#6366f1", "#7c3aed", "#a78bfa", "#818cf8",
+  "#0ea5e9", "#06b6d4", "#0891b2", "#0284c7", "#0369a1", "#0c4a6e",
+  "#f97316", "#f59e0b", "#fb923c", "#fdba74",
+  "#10b981", "#16a34a",
+  "#94a3b8", "#64748b", "#475569",
+];
+
 const MONTH_ABBREV_TO_JS = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
 
 function getTimelineRange(monthLabels, year, count) {
@@ -42,6 +50,7 @@ export default function TrackEditModal({ track, monthCount, months: monthLabels,
   const [label, setLabel] = useState("");
   const [startDateStr, setStartDateStr] = useState("");
   const [endDateStr, setEndDateStr] = useState("");
+  const [color, setColor] = useState(DEFAULT_NEW_COLOR);
   const [atRisk, setAtRisk] = useState(false);
 
   const minDateStr = range ? formatDateForInput(range.start) : "";
@@ -51,6 +60,7 @@ export default function TrackEditModal({ track, monthCount, months: monthLabels,
     if (!track) return;
     if (track.isNew) {
       setLabel("");
+      setColor(DEFAULT_NEW_COLOR);
       if (range) {
         setStartDateStr(formatDateForInput(range.start));
         const endOfFirstMonth = new Date(indexToDate(1, range, monthCount).getTime() - 86400000);
@@ -63,6 +73,7 @@ export default function TrackEditModal({ track, monthCount, months: monthLabels,
       return;
     }
     setLabel(track.label ?? "");
+    setColor(track.color && /^#[0-9A-Fa-f]{6}$/.test(track.color) ? track.color : DEFAULT_NEW_COLOR);
     if (range) {
       const start = typeof track.start === "number" ? Math.max(0, Math.min(track.start, monthCount)) : 0;
       const end = typeof track.end === "number" ? Math.max(0, Math.min(track.end, monthCount)) : 1;
@@ -94,7 +105,7 @@ export default function TrackEditModal({ track, monthCount, months: monthLabels,
       start: Math.max(0, Math.min(start, monthCount)),
       end: Math.max(0, Math.min(end, monthCount)),
       atRisk,
-      ...(creating && { color: DEFAULT_NEW_COLOR }),
+      color: color,
     });
     onClose();
   };
@@ -197,6 +208,39 @@ export default function TrackEditModal({ track, monthCount, months: monthLabels,
                   boxSizing: "border-box",
                 }}
               />
+            </div>
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>
+              Color
+            </label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+              {TRACK_COLOR_OPTIONS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setColor(c)}
+                  title={c}
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 8,
+                    background: c,
+                    border: color === c ? "3px solid #1e293b" : "2px solid #e2e8f0",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                  }}
+                />
+              ))}
+              <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", marginLeft: 4 }}>
+                <input
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  style={{ width: 28, height: 28, padding: 0, border: "none", borderRadius: 6, cursor: "pointer", background: "transparent" }}
+                />
+                <span style={{ fontSize: 12, color: "#64748b" }}>Custom</span>
+              </label>
             </div>
           </div>
           <div style={{ marginBottom: 20 }}>
