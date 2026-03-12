@@ -65,7 +65,7 @@ const NAME_COL = 80;
 export default function PPCXTeam() {
   const isMobile = useIsMobile();
   const { isEditor } = useAuth();
-  const { range, tracks, commitments, questions, updateTrack, addTrack, removeTrack, updateCommitment, addQuestion, updateQuestion } = useTimeline();
+  const { range, tracks, commitments, questions, updateTrack, addTrack, removeTrack, updateCommitment, addQuestion, updateQuestion, removeQuestion } = useTimeline();
   const MONTHS = range.months ?? ["Mar", "Apr", "May", "Jun", "Jul", "Aug"];
   const monthCount = MONTHS.length;
   const TRACKS = tracks.ppcx ?? [];
@@ -77,7 +77,7 @@ export default function PPCXTeam() {
   const teamQuestions = (questions || []).filter((q) => (q.teams || []).includes("ppcx"));
   const rowRefs = useRef([]);
   const rows = buildRowsWithOverrides(TRACKS);
-  const { draggingTrackId, handleBarPointerDown } = useTrackDrag(
+  const { draggingTrackId, handleBarPointerDown, handleResizeLeftPointerDown, handleResizeRightPointerDown } = useTrackDrag(
     timelineStripRef,
     monthCount,
     updateTrack,
@@ -166,9 +166,25 @@ export default function PPCXTeam() {
                   return (
                     <div key={track.id ?? track.label} style={{ position: "absolute", left: `${left}%`, width: `${width}%`, height: barHeight, zIndex: 2 }}>
                       {track.atRisk && <div style={{ position: "absolute", inset: 0, background: "#f8fafc", borderRadius: isMobile ? "3px 10px 10px 3px" : "4px 14px 14px 4px" }} aria-hidden />}
+                      {isEditor && (
+                        <>
+                          <div
+                            onMouseDown={(e) => handleResizeLeftPointerDown(track, TEAM_ID, e)}
+                            onTouchStart={(e) => handleResizeLeftPointerDown(track, TEAM_ID, e)}
+                            style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 10, cursor: "ew-resize", zIndex: 3 }}
+                            title="Drag to resize"
+                          />
+                          <div
+                            onMouseDown={(e) => handleResizeRightPointerDown(track, TEAM_ID, e)}
+                            onTouchStart={(e) => handleResizeRightPointerDown(track, TEAM_ID, e)}
+                            style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 10, cursor: "ew-resize", zIndex: 3 }}
+                            title="Drag to resize"
+                          />
+                        </>
+                      )}
                       <div
-                        onMouseDown={(e) => { if (isEditor) { e.preventDefault(); handleBarPointerDown(track, TEAM_ID, e); } }}
-                        onTouchStart={(e) => { if (isEditor) handleBarPointerDown(track, TEAM_ID, e); }}
+                        onMouseDown={(e) => { if (isEditor) { e.preventDefault(); handleBarPointerDown(track, TEAM_ID, e, ri); } }}
+                        onTouchStart={(e) => { if (isEditor) handleBarPointerDown(track, TEAM_ID, e, ri); }}
                         style={{ position: "relative", height: "100%", background: track.atRisk ? "transparent" : track.color, border: track.atRisk ? `2px dashed ${track.color}` : "none", borderRadius: isMobile ? "3px 10px 10px 3px" : "4px 14px 14px 4px", display: "flex", alignItems: "center", paddingLeft: isMobile ? 6 : 12, paddingRight: isMobile ? 10 : 20, fontSize: isMobile ? 10 : 12, fontWeight: 700, color: track.atRisk ? track.color : "white", whiteSpace: "nowrap", overflow: "hidden", clipPath: track.atRisk ? "none" : "polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%)", boxShadow: track.atRisk ? "none" : "0 1px 3px rgba(0,0,0,0.12)", cursor: isEditor ? (isDragging ? "grabbing" : "grab") : "default", userSelect: "none", opacity: isDragging ? 0.9 : 1 }}
                         title={isEditor ? "Drag to move, click to edit" : undefined}
                       >
@@ -373,6 +389,7 @@ export default function PPCXTeam() {
         <QuestionEditModal
           question={editingQuestion.id ? editingQuestion : null}
           onSave={(payload) => (editingQuestion.id ? updateQuestion(editingQuestion.id, payload) : addQuestion({ ...payload, teams: payload.teams || ["ppcx"] }))}
+          onDelete={editingQuestion.id ? () => removeQuestion(editingQuestion.id) : undefined}
           onClose={() => setEditingQuestion(null)}
         />
       )}

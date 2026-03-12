@@ -40,7 +40,7 @@ function getTeamDisplayLabel(teams) {
 export default function OpenQuestions() {
   const isMobile = useIsMobile();
   const { isEditor } = useAuth();
-  const { questions, addQuestion, updateQuestion } = useTimeline();
+  const { questions, addQuestion, updateQuestion, removeQuestion } = useTimeline();
   const [activeCategory, setActiveCategory] = useState("all");
   const [expanded, setExpanded] = useState(null);
   const [editingQuestion, setEditingQuestion] = useState(null);
@@ -156,6 +156,7 @@ export default function OpenQuestions() {
         <QuestionEditModal
           question={editingQuestion.id ? editingQuestion : null}
           onSave={(payload) => (editingQuestion.id ? updateQuestion(editingQuestion.id, payload) : addQuestion(payload))}
+          onDelete={editingQuestion.id ? () => removeQuestion(editingQuestion.id) : undefined}
           onClose={() => setEditingQuestion(null)}
         />
       )}

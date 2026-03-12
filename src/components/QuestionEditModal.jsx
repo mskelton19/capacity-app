@@ -7,7 +7,7 @@ const TEAM_OPTIONS = [
   { id: "yardai", label: "Yard AI" },
 ];
 
-export default function QuestionEditModal({ question, onSave, onClose }) {
+export default function QuestionEditModal({ question, onSave, onClose, onDelete }) {
   const isNew = !question?.id;
   const [questionText, setQuestionText] = useState("");
   const [detail, setDetail] = useState("");
@@ -129,9 +129,36 @@ export default function QuestionEditModal({ question, onSave, onClose }) {
               </select>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button type="button" onClick={onClose} style={{ padding: "10px 18px", border: "1.5px solid #e2e8f0", background: "white", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#64748b", cursor: "pointer" }}>Cancel</button>
-            <button type="submit" style={{ padding: "10px 18px", border: "none", background: "#6366f1", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer" }}>{isNew ? "Add" : "Save"}</button>
+          <div style={{ display: "flex", gap: 8, justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              {!isNew && onDelete && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this question?")) {
+                      onDelete();
+                      onClose();
+                    }
+                  }}
+                  style={{
+                    padding: "10px 18px",
+                    border: "1.5px solid #fca5a5",
+                    background: "#fef2f2",
+                    borderRadius: 8,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: "#dc2626",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete question
+                </button>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button type="button" onClick={onClose} style={{ padding: "10px 18px", border: "1.5px solid #e2e8f0", background: "white", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "#64748b", cursor: "pointer" }}>Cancel</button>
+              <button type="submit" style={{ padding: "10px 18px", border: "none", background: "#6366f1", borderRadius: 8, fontSize: 13, fontWeight: 700, color: "white", cursor: "pointer" }}>{isNew ? "Add" : "Save"}</button>
+            </div>
           </div>
         </form>
       </div>
