@@ -1,0 +1,44 @@
+replicaCount: 1
+
+image:
+  repository: capacity-review
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  host: capacity-review.example.com
+  tls: []
+
+# JWT signing secret — set a strong random value (e.g. openssl rand -hex 32)
+jwtSecret: ""
+
+postgresql:
+  auth:
+    database: capacity
+    username: capacity
+    # password: ""   # required — do not leave empty in production
+    existingSecret: ""
+  primary:
+    initdb:
+      scripts:
+        # Schema migration — runs on first boot when the data volume is empty.
+        01-init.sql: |
+          CREATE TABLE IF NOT EXISTS app_state (
+            id          TEXT        PRIMARY KEY DEFAULT 'default',
+            data        JSONB       NOT NULL DEFAULT '{}',
+            updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          );
+
+          CREATE TABLE IF NOT EXISTS users (
+            id            SERIAL      PRIMARY KEY,
+            email         TEXT        UNIQUE NOT NULL,
+            password_hash TEXT        NOT NULL,
+            created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+          );

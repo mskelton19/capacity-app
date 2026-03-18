@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { apiFetch, getToken, setToken } from "../lib/api";
 
 const AuthContext = createContext(null);
 
@@ -8,41 +8,50 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
+    if (!getToken()) {
       setLoading(false);
       return;
     }
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-    return () => subscription.unsubscribe();
+    apiFetch("/api/auth/me")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setUser(data ?? null))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
   const signIn = useCallback(async (email, password) => {
-    if (!supabase) return { error: new Error("Supabase not configured") };
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    return { data, error };
+    try {
+      const res = await apiFetch("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: new Error(data.error || "Sign in failed") };
+      setToken(data.token);
+      setUser({ email: data.email });
+      return { data };
+    } catch (err) {
+      return { error: err };
+    }
   }, []);
 
   const signOut = useCallback(async () => {
-    if (supabase) await supabase.auth.signOut();
+    setToken(null);
+    setUser(null);
+    await apiFetch("/api/auth/logout", { method: "POST" }).catch(() => {});
   }, []);
 
-  const value = {
-    user,
-    isEditor: Boolean(user),
-    loading,
-    signIn,
-    signOut,
-    isAuthConfigured: isSupabaseConfigured,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isEditor: Boolean(user),
+        loading,
+        signIn,
+        signOut,
+        isAuthConfigured: true,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

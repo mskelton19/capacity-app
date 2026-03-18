@@ -1,0 +1,15 @@
+Capacity Review deployed successfully.
+
+To add editor accounts, exec into the postgres pod and run:
+
+  kubectl exec -it \
+    $(kubectl get pod -l app.kubernetes.io/name=postgresql -o name | head -1) \
+    -- psql -U {{ .Values.postgresql.auth.username }} -d {{ .Values.postgresql.auth.database }}
+
+Then insert a user (generate the hash first with bcryptjs):
+
+  INSERT INTO users (email, password_hash)
+  VALUES ('you@example.com', '$2a$10$...');
+
+Generate a bcrypt hash locally:
+  node -e "console.log(require('bcryptjs').hashSync('yourpassword', 10))"
