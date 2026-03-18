@@ -12,9 +12,7 @@ const NAME_COL = 80;
 const TEAM_ID = "yardai";
 
 const PEOPLE = [
-  { name: "Mike", role: "PM", countsForCapacity: false },
-  { name: "Francesco", role: "Design", countsForCapacity: false },
-  { name: "Sergio", role: "Principal Eng" },
+  { name: "Sergio", role: "PM" },
   { name: "James",  role: "AI Eng" },
   { name: "Adam",   role: "AI Eng" },
   { name: "Maggie", role: "Data Sci" },
@@ -82,7 +80,7 @@ export default function YardAITeam() {
   );
 
   const nameCol = isMobile ? 36 : NAME_COL;
-  const timelineLeftCol = isMobile ? nameCol : 0;
+  const timelineLeftCol = nameCol;
   const pagePadding = isMobile ? "16px" : "28px 32px";
   const timelineMinWidth = isMobile ? 320 : undefined;
   const barHeight = isMobile ? 26 : 36;
@@ -201,7 +199,7 @@ export default function YardAITeam() {
         </div>
 
         {/* Team capacity */}
-        <div style={{ padding: isMobile ? "12px 12px 12px 0" : "12px 16px 12px 0" }}>
+        <div style={{ padding: isMobile ? "12px 12px 12px 0" : "12px 0 12px 0" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isMobile ? 8 : 8, paddingLeft: timelineLeftCol, gap: 12 }}>
             <div style={{ fontSize: isMobile ? 10 : 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase" }}>
               Team Capacity · People with assigned work
@@ -298,6 +296,7 @@ export default function YardAITeam() {
             <>
               <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.5, color: "#94a3b8", textTransform: "uppercase", marginBottom: 2 }}>Summary</div>
               <div style={{ display: "flex", gap: 4 }}>
+              <div style={{ width: NAME_COL, flexShrink: 0 }} />
               {MONTHS.map((_, mi) => {
                 const committed = committedByMonth[mi];
                 const unknown = unknownByMonth[mi];

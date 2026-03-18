@@ -1,4 +1,5 @@
 import { useState } from "react";
+import FullView from "./FullView";
 import PPCXTeam from "./PPCXTeam";
 import MobileAppTeam from "./MobileAppTeam";
 import YardAITeam from "./YardAITeam";
@@ -10,14 +11,15 @@ import LoginPage from "./components/LoginPage";
 import { useIsMobile } from "./hooks/useMediaQuery";
 
 const TABS = [
-  { id: "ppcx",      label: "PPCX",           sublabel: "7 people" },
+  { id: "full",      label: "Full View",       sublabel: "All teams" },
+  { id: "ppcx",      label: "PPCX",            sublabel: "7 people" },
   { id: "mobile",    label: "Mobile App",      sublabel: "4 people" },
   { id: "yardai",    label: "Yard AI",         sublabel: "6 people" },
   { id: "questions", label: "Open Questions",  sublabelKey: "questions" },
 ];
 
 export default function App() {
-  const [active, setActive] = useState("ppcx");
+  const [active, setActive] = useState("full");
   const [editingRange, setEditingRange] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const isMobile = useIsMobile();
@@ -85,13 +87,27 @@ export default function App() {
               {TABS.map(tab => {
                 const isQuestions = tab.id === "questions";
                 const sublabel = tab.sublabelKey === "questions" ? `${questionCount} open` : tab.sublabel;
+                const isActive = active === tab.id;
+                const accent = isQuestions ? "#f59e0b" : "#6366f1";
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActive(tab.id)}
-                    style={{ background: "none", border: "none", cursor: "pointer", padding: tabPadding, flexShrink: 0, borderBottom: active === tab.id ? `3px solid ${isQuestions ? "#f59e0b" : "#6366f1"}` : "3px solid transparent", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 1, transition: "border-color 0.15s" }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: tabPadding,
+                      flexShrink: 0,
+                      borderBottom: isActive ? `3px solid ${accent}` : "3px solid transparent",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: 1,
+                      transition: "border-color 0.15s",
+                    }}
                   >
-                    <span style={{ fontSize: tabFontSize, fontWeight: 800, color: active === tab.id ? (isQuestions ? "#f59e0b" : "#6366f1") : "#334155" }}>{tab.label}</span>
+                    <span style={{ fontSize: tabFontSize, fontWeight: 800, color: isActive ? accent : "#334155" }}>{tab.label}</span>
                     <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>{sublabel}</span>
                   </button>
                 );
@@ -118,13 +134,27 @@ export default function App() {
               {TABS.map(tab => {
                 const isQuestions = tab.id === "questions";
                 const sublabel = tab.sublabelKey === "questions" ? `${questionCount} open` : tab.sublabel;
+                const isActive = active === tab.id;
+                const accent = isQuestions ? "#f59e0b" : "#6366f1";
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActive(tab.id)}
-                    style={{ background: "none", border: "none", cursor: "pointer", padding: tabPadding, flexShrink: 0, borderBottom: active === tab.id ? `3px solid ${isQuestions ? "#f59e0b" : "#6366f1"}` : "3px solid transparent", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 2, transition: "border-color 0.15s" }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: tabPadding,
+                      flexShrink: 0,
+                      borderBottom: isActive ? `3px solid ${accent}` : "3px solid transparent",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      gap: 2,
+                      transition: "border-color 0.15s",
+                    }}
                   >
-                    <span style={{ fontSize: tabFontSize, fontWeight: 800, color: active === tab.id ? (isQuestions ? "#f59e0b" : "#6366f1") : "#334155" }}>{tab.label}</span>
+                    <span style={{ fontSize: tabFontSize, fontWeight: 800, color: isActive ? accent : "#334155" }}>{tab.label}</span>
                     <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 600 }}>{sublabel}</span>
                   </button>
                 );
@@ -136,6 +166,7 @@ export default function App() {
       </header>
 
       <div>
+        {active === "full"      && <FullView />}
         {active === "ppcx"      && <PPCXTeam />}
         {active === "mobile"    && <MobileAppTeam />}
         {active === "yardai"    && <YardAITeam />}
